@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>ObjectMapper</id>
+    <id>SimpleObjectMapper</id>
     <version>1.0.0.0</version>
     <title>Object Mapper</title>
     <authors>Nejc Skofic</authors>
@@ -11,8 +11,8 @@
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Simple object mapping library with included analyser and code generator for generating mapping implementation.</description>
-    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
-    <copyright>Copyright</copyright>
+    <releaseNotes>First release.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
     <tags>Object mapper, analyzers, code generation</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="" />
