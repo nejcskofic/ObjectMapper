@@ -51,7 +51,7 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer
                 diagnostic);
         }
 
-        private async Task<Document> GenerateImplementationAsync(Document document, SimpleBaseTypeSyntax implementationSyntax, CancellationToken cancellationToken)
+        private static async Task<Document> GenerateImplementationAsync(Document document, SimpleBaseTypeSyntax implementationSyntax, CancellationToken cancellationToken)
         {
             var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
 
@@ -142,7 +142,12 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer
                 {
                     continue;
                 }
-                propertiesMap.Add(mSymbol.Name, new MatchedPropertySymbols() { Source = mSymbol });
+                if (!propertiesMap.ContainsKey(mSymbol.Name))
+                {
+                    // If class definition is invalid, it may happen that we get multiple properties with the same name
+                    // Ignore all but first
+                    propertiesMap.Add(mSymbol.Name, new MatchedPropertySymbols() { Source = mSymbol });
+                }
             }
 
             foreach (IPropertySymbol mSymbol in target.GetMembers().Where(x => x.Kind == SymbolKind.Property))
@@ -156,8 +161,10 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer
                 {
                     propertiesMap.Add(mSymbol.Name, new MatchedPropertySymbols { Target = mSymbol });
                 }
-                else
+                else if (sourceProperty.Target == null)
                 {
+                    // If class definition is invalid, it may happen that we get multiple properties with the same name
+                    // Ignore all but first
                     sourceProperty.Target = mSymbol;
                 }
             }

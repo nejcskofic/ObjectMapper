@@ -9,7 +9,7 @@ namespace ObjectMapper.Framework
     public static class CollectionExtensions
     {
         /// <summary>
-        /// Copies elements from source enumerable to list.
+        /// Copies elements from source enumerable to list. List is cleared before new elements are copied over.
         /// </summary>
         /// <typeparam name="T">Type of objects in collections.</typeparam>
         /// <param name="target">The target.</param>
@@ -22,7 +22,7 @@ namespace ObjectMapper.Framework
         }
 
         /// <summary>
-        /// Copies elements from source enumerable to collection.
+        /// Copies elements from source enumerable to collection. Collection is cleared before new elements are copied over.
         /// </summary>
         /// <typeparam name="T">Type of objects in collections.</typeparam>
         /// <param name="target">The target.</param>

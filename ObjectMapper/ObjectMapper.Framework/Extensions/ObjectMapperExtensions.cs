@@ -16,6 +16,8 @@ namespace ObjectMapper.Framework
         /// <returns>New object with properties mapped from mapper.</returns>
         public static T CreateMappedObject<T>(this IObjectMapper<T> mapper) where T : new()
         {
+            if (mapper == null) return default(T);
+
             T newObject = new T();
             mapper.MapObject(newObject);
             return newObject;
@@ -31,6 +33,8 @@ namespace ObjectMapper.Framework
         /// <returns>New object with properties mapped from mapper adapter.</returns>
         public static U CreateMappedObject<T, U>(this IObjectMapperAdapter<T, U> adapter, T source) where U : new()
         {
+            if (adapter == null) return default(U);
+
             U newObject = new U();
             adapter.MapObject(source, newObject);
             return newObject;
@@ -46,6 +50,8 @@ namespace ObjectMapper.Framework
         /// <returns>New object with properties mapped from mapper adapter.</returns>
         public static T CreateMappedObject<T, U>(this IObjectMapperAdapter<T, U> adapter, U source) where T : new()
         {
+            if (adapter == null) return default(T);
+
             T newObject = new T();
             adapter.MapObject(source, newObject);
             return newObject;

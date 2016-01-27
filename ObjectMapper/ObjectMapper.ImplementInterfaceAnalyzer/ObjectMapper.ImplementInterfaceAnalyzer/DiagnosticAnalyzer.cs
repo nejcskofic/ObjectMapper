@@ -10,6 +10,10 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace ObjectMapper.ImplementInterfaceAnalyzer
 {
+    /// <summary>
+    /// Analyzer class for registering code generator for object mapper interfaces.
+    /// </summary>
+    /// <seealso cref="Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer" />
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ObjectMapperImplementInterfaceAnalyzerAnalyzer : DiagnosticAnalyzer
     {
@@ -22,13 +26,26 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer
 
         private static DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Info, isEnabledByDefault: true, description: Description);
 
+        /// <summary>
+        /// Returns a set of descriptors for the diagnostics that this analyzer is capable of producing.
+        /// </summary>
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
 
+        /// <summary>
+        /// Called once at session start to register actions in the analysis context.
+        /// </summary>
+        /// <param name="context"></param>
         public override void Initialize(AnalysisContext context)
         {
+            if (context == null) return;
+
             context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.SimpleBaseType);
         }
 
+        /// <summary>
+        /// Analyzes the node.
+        /// </summary>
+        /// <param name="context">The context.</param>
         private void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
             var node = (SimpleBaseTypeSyntax)context.Node;
