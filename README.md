@@ -82,3 +82,10 @@ namespace TestClassLibrary
 
 If you do not want to have mapping code inside your POCO classes you can use IObjectMapperAdapter<T,U>. By having cursor on IObjectMapperAdapter symbol, you can invoke 'Generate implementation' and generator will generate mapping code for mapping from class T to class U and from class U to class T.
 
+## Code generation rules
+
+1. Property names must match in both classes.
+2. Only public properties are considered. Also source getter and target setter must be public.
+3. Type must match exactly. Currently there is no check if source object/value is assignable to target.
+4. If source and target types are collections, mapping code will copy objects from one collection to another if generic type is the same. Non generic collections are not supported.
+
