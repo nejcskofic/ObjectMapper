@@ -40,34 +40,46 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer
             var diagnosticSpan = diagnostic.Location.SourceSpan;
 
             // Find the type declaration identified by the diagnostic.
-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<SimpleBaseTypeSyntax>().First();
+            var baseTypeDeclaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<SimpleBaseTypeSyntax>().FirstOrDefault();
+            if (baseTypeDeclaration != null)
+            {
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title: title,
+                        createChangedDocument: c => GenerateInterfaceImplementationAsync(context.Document, baseTypeDeclaration, c),
+                        equivalenceKey: title),
+                    diagnostic);
+                return;
+            }
 
-            // Register a code action that will invoke the fix.
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: title,
-                    createChangedDocument: c => GenerateImplementationAsync(context.Document, declaration, c),
-                    equivalenceKey: title),
-                diagnostic);
+            var methodDeclaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+            if (methodDeclaration != null)
+            {
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title: title,
+                        createChangedDocument: c => GenerateMethodImplementationAsync(context.Document, methodDeclaration, c),
+                        equivalenceKey: title),
+                    diagnostic);
+                return;
+            }
         }
 
-        private static async Task<Document> GenerateImplementationAsync(Document document, SimpleBaseTypeSyntax implementationSyntax, CancellationToken cancellationToken)
+        private static async Task<Document> GenerateInterfaceImplementationAsync(Document document, SimpleBaseTypeSyntax baseTypeSyntax, CancellationToken cancellationToken)
         {
             var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
 
-            SimpleNameSyntax sns = (implementationSyntax.Type as SimpleNameSyntax) ?? (implementationSyntax.Type as QualifiedNameSyntax).Right;
+            SimpleNameSyntax sns = (baseTypeSyntax.Type as SimpleNameSyntax) ?? (baseTypeSyntax.Type as QualifiedNameSyntax).Right;
             var interfaceSymbol = semanticModel.GetSymbolInfo(sns).Symbol as INamedTypeSymbol;
             if (interfaceSymbol == null || interfaceSymbol.TypeKind != TypeKind.Interface) return document;
 
-            var originalClassDefinitionSyntax = (ClassDeclarationSyntax)implementationSyntax.Parent.Parent;
+            var originalClassDefinitionSyntax = (ClassDeclarationSyntax)baseTypeSyntax.Parent.Parent;
             ClassDeclarationSyntax modifiedClassDefinitionSyntax = null;
             if (interfaceSymbol.Name == "IObjectMapper" && interfaceSymbol.TypeArguments.Length == 1)
             {
                 var sourceClassSymbol = semanticModel.GetDeclaredSymbol(originalClassDefinitionSyntax);
-                if (sourceClassSymbol == null) return document;
-
                 var targetClassSymbol = interfaceSymbol.TypeArguments[0].OriginalDefinition as INamedTypeSymbol;
-                if (targetClassSymbol == null) return document;
+                if (sourceClassSymbol == null || targetClassSymbol == null) return document;
 
                 var matchedProperties = RetrieveMatchedProperties(sourceClassSymbol, targetClassSymbol);
 
@@ -92,29 +104,35 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer
             } 
             else if (interfaceSymbol.Name == "IObjectMapperAdapter" && interfaceSymbol.TypeArguments.Length == 2)
             {
+                var adapterClassSymbol = semanticModel.GetDeclaredSymbol(originalClassDefinitionSyntax);
                 var sourceClassSymbol = interfaceSymbol.TypeArguments[0].OriginalDefinition as INamedTypeSymbol;
-                if (sourceClassSymbol == null) return document;
-
                 var targetClassSymbol = interfaceSymbol.TypeArguments[1].OriginalDefinition as INamedTypeSymbol;
-                if (targetClassSymbol == null) return document;
+                if (sourceClassSymbol == null || targetClassSymbol == null) return document;
 
                 var matchedProperties = RetrieveMatchedProperties(sourceClassSymbol, targetClassSymbol);
 
                 modifiedClassDefinitionSyntax = originalClassDefinitionSyntax;
                 foreach (IMethodSymbol member in interfaceSymbol.GetMembers().Where(x => x.Kind == SymbolKind.Method))
                 {
-                    var method = sourceClassSymbol.FindImplementationForInterfaceMember(member) as IMethodSymbol;
+                    var matchingPropertyList = matchedProperties;
+                    // check if we have to switch matched properties
+                    if (member.Parameters.Length == 2 && !interfaceSymbol.TypeArguments[0].Equals(member.Parameters[0].Type))
+                    {
+                        matchingPropertyList = matchingPropertyList.Select(x => new MatchedPropertySymbols { Source = x.Target, Target = x.Source });
+                    }
+
+                    var method = adapterClassSymbol.FindImplementationForInterfaceMember(member) as IMethodSymbol;
                     MethodDeclarationSyntax methodSyntax = null;
                     if (method != null)
                     {
                         methodSyntax = await method.DeclaringSyntaxReferences[0].GetSyntaxAsync(cancellationToken) as MethodDeclarationSyntax;
-                        var newMethodSyntax = methodSyntax.WithBody(GenerateMethodBody(member, matchedProperties, semanticModel, originalClassDefinitionSyntax.Span.End - 1));
+                        var newMethodSyntax = methodSyntax.WithBody(GenerateMethodBody(member, matchingPropertyList, semanticModel, originalClassDefinitionSyntax.Span.End - 1));
                         modifiedClassDefinitionSyntax = modifiedClassDefinitionSyntax.ReplaceNode(methodSyntax, newMethodSyntax);
                     }
                     else
                     {
                         methodSyntax = GenerateMethodImplementation(member, semanticModel, originalClassDefinitionSyntax.Span.End - 1).
-                            WithBody(GenerateMethodBody(member, matchedProperties, semanticModel, originalClassDefinitionSyntax.Span.End - 1));
+                            WithBody(GenerateMethodBody(member, matchingPropertyList, semanticModel, originalClassDefinitionSyntax.Span.End - 1));
                         modifiedClassDefinitionSyntax = modifiedClassDefinitionSyntax.AddMembers(methodSyntax);
                     }
                 }
@@ -128,6 +146,38 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer
             // replace root and return modified document
             var root = await document.GetSyntaxRootAsync(cancellationToken);
             var newRoot = root.ReplaceNode(originalClassDefinitionSyntax, modifiedClassDefinitionSyntax);
+            var newDocument = document.WithSyntaxRoot(newRoot);
+            return newDocument;
+        }
+
+        private static async Task<Document> GenerateMethodImplementationAsync(Document document, MethodDeclarationSyntax methodSyntax, CancellationToken cancellationToken)
+        {
+            var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+            IMethodSymbol methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
+
+            MethodDeclarationSyntax modifiedMethodSyntax = methodSyntax;
+            if (methodSymbol.Parameters.Length == 1)
+            {
+                var sourceClassSymbol = methodSymbol.ContainingType;
+                var targetClassSymbol = methodSymbol.Parameters[0].Type as INamedTypeSymbol;
+                if (targetClassSymbol == null) return document;
+
+                var matchedProperties = RetrieveMatchedProperties(sourceClassSymbol, targetClassSymbol);
+                modifiedMethodSyntax = methodSyntax.WithBody(GenerateMethodBody(methodSymbol, matchedProperties, semanticModel, methodSyntax.Body.Span.End - 1));
+            }
+            else if (methodSymbol.Parameters.Length == 2)
+            {
+                var sourceClassSymbol = methodSymbol.Parameters[0].Type as INamedTypeSymbol;
+                var targetClassSymbol = methodSymbol.Parameters[1].Type as INamedTypeSymbol;
+                if (sourceClassSymbol == null || targetClassSymbol == null) return document;
+
+                var matchedProperties = RetrieveMatchedProperties(sourceClassSymbol, targetClassSymbol);
+                modifiedMethodSyntax = methodSyntax.WithBody(GenerateMethodBody(methodSymbol, matchedProperties, semanticModel, methodSyntax.Body.Span.End - 1));
+            }
+
+            // replace root and return modified document
+            var root = await document.GetSyntaxRootAsync(cancellationToken);
+            var newRoot = root.ReplaceNode(methodSyntax, modifiedMethodSyntax);
             var newDocument = document.WithSyntaxRoot(newRoot);
             return newDocument;
         }
@@ -183,11 +233,6 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer
             }
             else if (method.Name == "MapObject" && method.ReturnsVoid && method.Parameters.Length == 2)
             {
-                // check if we have to switch matched properties
-                if(!method.ContainingType.TypeArguments[0].Equals(method.Parameters[0].Type))
-                {
-                    matchedProperties = matchedProperties.Select(x => new MatchedPropertySymbols { Source = x.Target, Target = x.Source });
-                }
                 return SyntaxFactory.Block(
                     SyntaxFactory.Token(SyntaxKind.OpenBraceToken),
                     SyntaxFactory.List(GenerateAssignmentSyntax(SyntaxFactory.IdentifierName(method.Parameters[0].Name), SyntaxFactory.IdentifierName(method.Parameters[1].Name), matchedProperties, model, position)),
