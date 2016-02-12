@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ObjectMapper.ImplementInterfaceAnalyzer {
+namespace ObjectMapper.GenerateImplementationAnalyzer {
     using System;
     using System.Reflection;
     
@@ -40,7 +40,7 @@ namespace ObjectMapper.ImplementInterfaceAnalyzer {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ObjectMapper.ImplementInterfaceAnalyzer.Resources", typeof(Resources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ObjectMapper.GenerateImplementationAnalyzer.Resources", typeof(Resources).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

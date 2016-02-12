@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectMapper.ImplementInterfaceAnalyzer", "ObjectMapper.ImplementInterfaceAnalyzer\ObjectMapper.ImplementInterfaceAnalyzer\ObjectMapper.ImplementInterfaceAnalyzer.csproj", "{492F3804-A43F-4E82-B649-8AD0D967A830}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectMapper.GenerateImplementationAnalyzer", "ObjectMapper.GenerateImplementationAnalyzer\ObjectMapper.GenerateImplementationAnalyzer\ObjectMapper.GenerateImplementationAnalyzer.csproj", "{492F3804-A43F-4E82-B649-8AD0D967A830}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectMapper.ImplementInterfaceAnalyzer.Test", "ObjectMapper.ImplementInterfaceAnalyzer\ObjectMapper.ImplementInterfaceAnalyzer.Test\ObjectMapper.ImplementInterfaceAnalyzer.Test.csproj", "{FCC88640-43A1-4FEE-AE9B-44674C6376F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectMapper.GenerateImplementationAnalyzer.Test", "ObjectMapper.GenerateImplementationAnalyzer\ObjectMapper.GenerateImplementationAnalyzer.Test\ObjectMapper.GenerateImplementationAnalyzer.Test.csproj", "{FCC88640-43A1-4FEE-AE9B-44674C6376F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectMapper.ImplementInterfaceAnalyzer.Vsix", "ObjectMapper.ImplementInterfaceAnalyzer\ObjectMapper.ImplementInterfaceAnalyzer.Vsix\ObjectMapper.ImplementInterfaceAnalyzer.Vsix.csproj", "{2AF839D8-C2E5-45CC-BA8E-04C20DD75B96}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectMapper.GenerateImplementationAnalyzer.Vsix", "ObjectMapper.GenerateImplementationAnalyzer\ObjectMapper.GenerateImplementationAnalyzer.Vsix\ObjectMapper.GenerateImplementationAnalyzer.Vsix.csproj", "{2AF839D8-C2E5-45CC-BA8E-04C20DD75B96}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectMapper.Framework", "ObjectMapper.Framework\ObjectMapper.Framework.csproj", "{8220C878-68E1-4307-A908-66FBEA9D8B56}"
 EndProject

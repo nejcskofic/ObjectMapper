@@ -8,8 +8,8 @@
     <ProjectGuid>{492F3804-A43F-4E82-B649-8AD0D967A830}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ObjectMapper.ImplementInterfaceAnalyzer</RootNamespace>
-    <AssemblyName>ObjectMapper.ImplementInterfaceAnalyzer</AssemblyName>
+    <RootNamespace>ObjectMapper.GenerateImplementationAnalyzer</RootNamespace>
+    <AssemblyName>ObjectMapper.GenerateImplementationAnalyzer</AssemblyName>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -124,9 +124,6 @@
   <ItemGroup />
   <ItemGroup>
     <None Include="lib\ObjectMapper.Framework.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib\ObjectMapper.Framework.pdb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

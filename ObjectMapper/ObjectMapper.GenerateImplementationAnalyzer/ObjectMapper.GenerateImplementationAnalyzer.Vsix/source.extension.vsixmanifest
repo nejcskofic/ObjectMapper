@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="ObjectMapper.ImplementInterfaceAnalyzer..bef556c4-6939-486c-8f4e-79c002e41fb0" Version="1.0" Language="en-US" Publisher="Nejc"/>
-    <DisplayName>ObjectMapper.ImplementInterfaceAnalyzer</DisplayName>
+    <Identity Id="ObjectMapper.GenerateImplementationAnalyzer..bef556c4-6939-486c-8f4e-79c002e41fb0" Version="1.0" Language="en-US" Publisher="Nejc"/>
+    <DisplayName>ObjectMapper.GenerateImplementationAnalyzer</DisplayName>
     <Description xml:space="preserve">This is a sample diagnostic extension for the .NET Compiler Platform ("Roslyn").</Description>
   </Metadata>
   <Installation>
@@ -12,7 +12,7 @@
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
   </Dependencies>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="ObjectMapper.ImplementInterfaceAnalyzer" Path="|ObjectMapper.ImplementInterfaceAnalyzer|"/>
-    <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="ObjectMapper.ImplementInterfaceAnalyzer" Path="|ObjectMapper.ImplementInterfaceAnalyzer|"/>
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="ObjectMapper.GenerateImplementationAnalyzer" Path="|ObjectMapper.GenerateImplementationAnalyzer|" />
+    <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="ObjectMapper.GenerateImplementationAnalyzer" Path="|ObjectMapper.GenerateImplementationAnalyzer|" />
   </Assets>
 </PackageManifest>

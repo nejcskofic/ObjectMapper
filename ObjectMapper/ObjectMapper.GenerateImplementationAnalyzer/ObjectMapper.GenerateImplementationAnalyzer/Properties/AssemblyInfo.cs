@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ObjectMapper.ImplementInterfaceAnalyzer")]
+[assembly: AssemblyTitle("ObjectMapper.GenerateImplementationAnalyzer")]
 [assembly: AssemblyDescription("Contains analyzer and code fix provider for generating mapping boilerplate code.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ObjectMapper.ImplementInterfaceAnalyzer")]
+[assembly: AssemblyProduct("ObjectMapper.GenerateImplementationAnalyzer")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

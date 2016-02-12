@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace ObjectMapper.ImplementInterfaceAnalyzer
+namespace ObjectMapper.GenerateImplementationAnalyzer
 {
     /// <summary>
     /// Analyzer class for registering code generator for object mapper interfaces.

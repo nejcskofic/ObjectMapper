@@ -4,9 +4,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TestHelper;
-using ObjectMapper.ImplementInterfaceAnalyzer;
 
-namespace ObjectMapper.ImplementInterfaceAnalyzer.Test
+namespace ObjectMapper.GenerateImplementationAnalyzer.Test
 {
     [TestClass]
     public class UnitTest : CodeFixVerifier

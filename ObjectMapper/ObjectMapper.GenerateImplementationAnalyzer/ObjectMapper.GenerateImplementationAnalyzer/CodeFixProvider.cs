@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Formatting;
 
-namespace ObjectMapper.ImplementInterfaceAnalyzer
+namespace ObjectMapper.GenerateImplementationAnalyzer
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ObjectMapperImplementInterfaceAnalyzerCodeFixProvider)), Shared]
     public class ObjectMapperImplementInterfaceAnalyzerCodeFixProvider : CodeFixProvider
