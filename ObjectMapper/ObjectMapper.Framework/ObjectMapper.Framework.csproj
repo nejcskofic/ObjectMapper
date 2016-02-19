@@ -52,6 +52,7 @@
     <Compile Include="Extensions\ObjectMapperExtensions.cs" />
     <Compile Include="IObjectMapper.cs" />
     <Compile Include="IObjectMapperAdapter.cs" />
+    <Compile Include="ObjectMapperMethodAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

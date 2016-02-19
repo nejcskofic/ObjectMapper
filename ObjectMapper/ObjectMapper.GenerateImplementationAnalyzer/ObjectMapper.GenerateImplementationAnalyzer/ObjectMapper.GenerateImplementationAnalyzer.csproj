@@ -42,8 +42,9 @@
     <AssemblyOriginatorKeyFile>objectmapper.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CodeFixProvider.cs" />
-    <Compile Include="DiagnosticAnalyzer.cs" />
+    <Compile Include="AttributeUsageCodeAnalyzer.cs" />
+    <Compile Include="GenerateImplementationCodeGenerator.cs" />
+    <Compile Include="GenerateImplementationCodeAnalyzer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>

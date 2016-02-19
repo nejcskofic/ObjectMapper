@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 
 namespace TestHelper
@@ -21,6 +22,8 @@ namespace TestHelper
         private static readonly MetadataReference CodeAnalysisReference = MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
         private static readonly MetadataReference ObjectMapperFrameworkReference = MetadataReference.CreateFromFile(typeof(ObjectMapper.Framework.IObjectMapper<>).Assembly.Location);
         private static readonly MetadataReference SystemReference = MetadataReference.CreateFromFile(typeof(LinkedList<>).Assembly.Location);
+        private static readonly MetadataReference SystemRuntimeFacadeReference = MetadataReference.CreateFromFile(Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location), "System.Runtime.dll"));
+        private static readonly MetadataReference SystemCollectionsFacadeReference = MetadataReference.CreateFromFile(Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location), "System.Collections.dll"));
 
         internal static string DefaultFilePathPrefix = "Test";
         internal static string CSharpDefaultFileExt = "cs";
@@ -156,7 +159,9 @@ namespace TestHelper
                 .AddMetadataReference(projectId, CSharpSymbolsReference)
                 .AddMetadataReference(projectId, CodeAnalysisReference)
                 .AddMetadataReference(projectId, SystemReference)
-                .AddMetadataReference(projectId, ObjectMapperFrameworkReference);
+                .AddMetadataReference(projectId, ObjectMapperFrameworkReference)
+                .AddMetadataReference(projectId, SystemRuntimeFacadeReference)
+                .AddMetadataReference(projectId, SystemCollectionsFacadeReference);
 
             int count = 0;
             foreach (var source in sources)

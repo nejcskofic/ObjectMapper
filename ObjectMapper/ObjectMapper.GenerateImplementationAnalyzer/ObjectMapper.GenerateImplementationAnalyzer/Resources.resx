@@ -117,15 +117,24 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AnalyzerDescription" xml:space="preserve">
+  <data name="AttributeUsageAnalyzerDescription" xml:space="preserve">
+    <value>Attribute cannot be applied to methods that do not accept exactly two parameters and return void.</value>
+  </data>
+  <data name="AttributeUsageAnalyzerMessageFormat" xml:space="preserve">
+    <value>Attribute cannot be applied to this method.</value>
+  </data>
+  <data name="AttributeUsageAnalyzerTitle" xml:space="preserve">
+    <value>Invalid use of object mapper attribute.</value>
+  </data>
+  <data name="GenerateImplementationAnalyzerDescription" xml:space="preserve">
     <value>Interface implementation can be generated.</value>
     <comment>An optional longer localizable description of the diagnostic.</comment>
   </data>
-  <data name="AnalyzerMessageFormat" xml:space="preserve">
-    <value>Implementation of interface '{0}' can be generated.</value>
+  <data name="GenerateImplementationAnalyzerMessageFormat" xml:space="preserve">
+    <value>Implementation of mapping method(s) can be generated.</value>
     <comment>The format-able message the diagnostic displays.</comment>
   </data>
-  <data name="AnalyzerTitle" xml:space="preserve">
+  <data name="GenerateImplementationAnalyzerTitle" xml:space="preserve">
     <value>Type implements object mapper interface.</value>
     <comment>The title of the diagnostic.</comment>
   </data>

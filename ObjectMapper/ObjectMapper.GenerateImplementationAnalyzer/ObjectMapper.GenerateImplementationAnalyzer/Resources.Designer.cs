@@ -62,29 +62,56 @@ namespace ObjectMapper.GenerateImplementationAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Interface implementation can be generated..
+        ///   Looks up a localized string similar to Attribute cannot be applied to methods that do not accept exactly two parameters and return void..
         /// </summary>
-        internal static string AnalyzerDescription {
+        internal static string AttributeUsageAnalyzerDescription {
             get {
-                return ResourceManager.GetString("AnalyzerDescription", resourceCulture);
+                return ResourceManager.GetString("AttributeUsageAnalyzerDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Implementation of interface &apos;{0}&apos; can be generated..
+        ///   Looks up a localized string similar to Attribute cannot be applied to this method..
         /// </summary>
-        internal static string AnalyzerMessageFormat {
+        internal static string AttributeUsageAnalyzerMessageFormat {
             get {
-                return ResourceManager.GetString("AnalyzerMessageFormat", resourceCulture);
+                return ResourceManager.GetString("AttributeUsageAnalyzerMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid use of object mapper attribute..
+        /// </summary>
+        internal static string AttributeUsageAnalyzerTitle {
+            get {
+                return ResourceManager.GetString("AttributeUsageAnalyzerTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Interface implementation can be generated..
+        /// </summary>
+        internal static string GenerateImplementationAnalyzerDescription {
+            get {
+                return ResourceManager.GetString("GenerateImplementationAnalyzerDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Implementation of mapping method(s) can be generated..
+        /// </summary>
+        internal static string GenerateImplementationAnalyzerMessageFormat {
+            get {
+                return ResourceManager.GetString("GenerateImplementationAnalyzerMessageFormat", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Type implements object mapper interface..
         /// </summary>
-        internal static string AnalyzerTitle {
+        internal static string GenerateImplementationAnalyzerTitle {
             get {
-                return ResourceManager.GetString("AnalyzerTitle", resourceCulture);
+                return ResourceManager.GetString("GenerateImplementationAnalyzerTitle", resourceCulture);
             }
         }
     }

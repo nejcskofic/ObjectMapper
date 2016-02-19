@@ -16,14 +16,14 @@ using Microsoft.CodeAnalysis.Formatting;
 
 namespace ObjectMapper.GenerateImplementationAnalyzer
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ObjectMapperImplementInterfaceAnalyzerCodeFixProvider)), Shared]
-    public class ObjectMapperImplementInterfaceAnalyzerCodeFixProvider : CodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(GenerateImplementationCodeGenerator)), Shared]
+    public class GenerateImplementationCodeGenerator : CodeFixProvider
     {
         private const string title = "Generate implementation";
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get { return ImmutableArray.Create(ObjectMapperImplementInterfaceAnalyzerAnalyzer.DiagnosticId); }
+            get { return ImmutableArray.Create(GenerateImplementationCodeAnalyzer.DiagnosticId); }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()
@@ -83,7 +83,9 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
 
                 var matchedProperties = RetrieveMatchedProperties(sourceClassSymbol, targetClassSymbol);
 
-                modifiedClassDefinitionSyntax = originalClassDefinitionSyntax;
+                var updatedMethods = new Dictionary<MethodDeclarationSyntax, MethodDeclarationSyntax>();
+                var addedMethods = new List<MethodDeclarationSyntax>();
+
                 foreach (IMethodSymbol member in interfaceSymbol.GetMembers().Where(x => x.Kind == SymbolKind.Method))
                 {
                     var method = sourceClassSymbol.FindImplementationForInterfaceMember(member) as IMethodSymbol;
@@ -92,15 +94,17 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
                     {
                         methodSyntax = await method.DeclaringSyntaxReferences[0].GetSyntaxAsync(cancellationToken) as MethodDeclarationSyntax;
                         var newMethodSyntax = methodSyntax.WithBody(GenerateMethodBody(member, matchedProperties, semanticModel, originalClassDefinitionSyntax.Span.End - 1));
-                        modifiedClassDefinitionSyntax = modifiedClassDefinitionSyntax.ReplaceNode(methodSyntax, newMethodSyntax);
+                        updatedMethods.Add(methodSyntax, newMethodSyntax);
                     }
                     else
                     {
                         methodSyntax = GenerateMethodImplementation(member, semanticModel, originalClassDefinitionSyntax.Span.End - 1).
                             WithBody(GenerateMethodBody(member, matchedProperties, semanticModel, originalClassDefinitionSyntax.Span.End - 1));
-                        modifiedClassDefinitionSyntax = modifiedClassDefinitionSyntax.AddMembers(methodSyntax);
+                        addedMethods.Add(methodSyntax);
                     }
                 }
+
+                modifiedClassDefinitionSyntax = originalClassDefinitionSyntax.ReplaceNodes(updatedMethods.Keys.AsEnumerable(), (n1, n2) => updatedMethods[n1]).AddMembers(addedMethods.ToArray());
             } 
             else if (interfaceSymbol.Name == "IObjectMapperAdapter" && interfaceSymbol.TypeArguments.Length == 2)
             {
@@ -111,7 +115,9 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
 
                 var matchedProperties = RetrieveMatchedProperties(sourceClassSymbol, targetClassSymbol);
 
-                modifiedClassDefinitionSyntax = originalClassDefinitionSyntax;
+                var updatedMethods = new Dictionary<MethodDeclarationSyntax, MethodDeclarationSyntax>();
+                var addedMethods = new List<MethodDeclarationSyntax>();
+
                 foreach (IMethodSymbol member in interfaceSymbol.GetMembers().Where(x => x.Kind == SymbolKind.Method))
                 {
                     var matchingPropertyList = matchedProperties;
@@ -127,21 +133,23 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
                     {
                         methodSyntax = await method.DeclaringSyntaxReferences[0].GetSyntaxAsync(cancellationToken) as MethodDeclarationSyntax;
                         var newMethodSyntax = methodSyntax.WithBody(GenerateMethodBody(member, matchingPropertyList, semanticModel, originalClassDefinitionSyntax.Span.End - 1));
-                        modifiedClassDefinitionSyntax = modifiedClassDefinitionSyntax.ReplaceNode(methodSyntax, newMethodSyntax);
+                        updatedMethods.Add(methodSyntax, newMethodSyntax);
                     }
                     else
                     {
                         methodSyntax = GenerateMethodImplementation(member, semanticModel, originalClassDefinitionSyntax.Span.End - 1).
                             WithBody(GenerateMethodBody(member, matchingPropertyList, semanticModel, originalClassDefinitionSyntax.Span.End - 1));
-                        modifiedClassDefinitionSyntax = modifiedClassDefinitionSyntax.AddMembers(methodSyntax);
+                        addedMethods.Add(methodSyntax);
                     }
                 }
+
+                modifiedClassDefinitionSyntax = originalClassDefinitionSyntax.ReplaceNodes(updatedMethods.Keys.AsEnumerable(), (n1, n2) => updatedMethods[n1]).AddMembers(addedMethods.ToArray());
             }
-            else
+
+            if (modifiedClassDefinitionSyntax == null)
             {
                 return document;
             }
-
 
             // replace root and return modified document
             var root = await document.GetSyntaxRootAsync(cancellationToken);
@@ -224,14 +232,14 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
 
         private static BlockSyntax GenerateMethodBody(IMethodSymbol method, IEnumerable<MatchedPropertySymbols> matchedProperties, SemanticModel model, int position)
         {
-            if (method.Name == "MapObject" && method.ReturnsVoid && method.Parameters.Length == 1)
+            if (method.ReturnsVoid && method.Parameters.Length == 1)
             {
                 return SyntaxFactory.Block(
                     SyntaxFactory.Token(SyntaxKind.OpenBraceToken),
                     SyntaxFactory.List(GenerateAssignmentSyntax(SyntaxFactory.ThisExpression(), SyntaxFactory.IdentifierName(method.Parameters[0].Name), matchedProperties, model, position)),
                     SyntaxFactory.Token(SyntaxKind.CloseBraceToken));
             }
-            else if (method.Name == "MapObject" && method.ReturnsVoid && method.Parameters.Length == 2)
+            else if (method.ReturnsVoid && method.Parameters.Length == 2)
             {
                 return SyntaxFactory.Block(
                     SyntaxFactory.Token(SyntaxKind.OpenBraceToken),

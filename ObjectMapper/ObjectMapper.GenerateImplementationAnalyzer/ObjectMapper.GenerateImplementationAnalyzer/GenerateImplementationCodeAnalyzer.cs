@@ -15,13 +15,13 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
     /// </summary>
     /// <seealso cref="Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer" />
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class ObjectMapperImplementInterfaceAnalyzerAnalyzer : DiagnosticAnalyzer
+    public class GenerateImplementationCodeAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "OMCG001";
+        public const string DiagnosticId = "OMCG01";
 
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.GenerateImplementationAnalyzerTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.GenerateImplementationAnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.GenerateImplementationAnalyzerDescription), Resources.ResourceManager, typeof(Resources));
         private const string Category = "Code generation";
 
         private static DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Hidden, isEnabledByDefault: true, description: Description);
@@ -56,9 +56,12 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
             }
 
             var methodNode = context.Node as MethodDeclarationSyntax;
-            if (methodNode != null)
+            if (methodNode != null && CheckForObjectMapperMethod(methodNode, context))
             {
-                CheckForObjectMapperMethod(methodNode, context);
+                return;
+            }
+            if (methodNode != null && CheckForMethodWithObjectMapperAttribute(methodNode, context))
+            {
                 return;
             }
         }
@@ -88,7 +91,12 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
                 return;
             }
 
-            var diagnostic = Diagnostic.Create(Rule, node.GetLocation(), symbol.ToString());
+            if (!IsCorrectAssembly(symbol.OriginalDefinition.ContainingAssembly))
+            {
+                return;
+            }
+
+            var diagnostic = Diagnostic.Create(Rule, node.GetLocation());
             context.ReportDiagnostic(diagnostic);
         }
 
@@ -97,11 +105,11 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
         /// </summary>
         /// <param name="node">The node.</param>
         /// <param name="context">The context.</param>
-        private static void CheckForObjectMapperMethod(MethodDeclarationSyntax node, SyntaxNodeAnalysisContext context)
+        private static bool CheckForObjectMapperMethod(MethodDeclarationSyntax node, SyntaxNodeAnalysisContext context)
         {
             if (node?.Identifier.Text != "MapObject")
             {
-                return;
+                return false;
             }
             var symbol = context.SemanticModel.GetDeclaredSymbol(node);
             if (symbol == null || symbol.Kind != SymbolKind.Method || 
@@ -109,22 +117,29 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
                 symbol.DeclaredAccessibility != Accessibility.Public || !symbol.ReturnsVoid || 
                 (symbol.Parameters.Length != 1 && symbol.Parameters.Length != 2))
             {
-                return;
+                return false;
             }
 
             // find out if we have implementation of framework interfaces
             INamedTypeSymbol mapperInterface = null;
             if (symbol.Parameters.Length == 1)
             {
-                mapperInterface = symbol.ContainingType.AllInterfaces.FirstOrDefault(x => x.OriginalDefinition.ToDisplayString() == "ObjectMapper.Framework.IObjectMapper<T>" && x.TypeArguments[0].Equals(symbol.Parameters[0].Type));
+                mapperInterface = symbol.ContainingType.AllInterfaces.FirstOrDefault(x => 
+                    x.OriginalDefinition.ToDisplayString() == "ObjectMapper.Framework.IObjectMapper<T>" && 
+                    IsCorrectAssembly(x.OriginalDefinition.ContainingAssembly) &&
+                    x.TypeArguments[0].Equals(symbol.Parameters[0].Type));
             }
             else if (symbol.Parameters.Length == 2)
             {
-                mapperInterface = symbol.ContainingType.AllInterfaces.FirstOrDefault(x => x.OriginalDefinition.ToDisplayString() == "ObjectMapper.Framework.IObjectMapperAdapter<T, U>" && (x.TypeArguments[0].Equals(symbol.Parameters[0].Type) && x.TypeArguments[1].Equals(symbol.Parameters[1].Type) || x.TypeArguments[0].Equals(symbol.Parameters[1].Type) && x.TypeArguments[1].Equals(symbol.Parameters[0].Type)));
+                mapperInterface = symbol.ContainingType.AllInterfaces.FirstOrDefault(x => 
+                    x.OriginalDefinition.ToDisplayString() == "ObjectMapper.Framework.IObjectMapperAdapter<T, U>" &&
+                    IsCorrectAssembly(x.OriginalDefinition.ContainingAssembly) && 
+                    (x.TypeArguments[0].Equals(symbol.Parameters[0].Type) && x.TypeArguments[1].Equals(symbol.Parameters[1].Type) 
+                    || x.TypeArguments[0].Equals(symbol.Parameters[1].Type) && x.TypeArguments[1].Equals(symbol.Parameters[0].Type)));
             }
             if (mapperInterface == null)
             {
-                return;
+                return false;
             }
 
             // final check
@@ -139,11 +154,80 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
             }
             if (!implementsInterfaceMethod)
             {
-                return;
+                return false;
             }
 
-            var diagnostic = Diagnostic.Create(Rule, node.Identifier.GetLocation(), mapperInterface.ToString());
+            var diagnostic = Diagnostic.Create(Rule, node.Identifier.GetLocation());
             context.ReportDiagnostic(diagnostic);
+            return true;
+        }
+
+        private static bool CheckForMethodWithObjectMapperAttribute(MethodDeclarationSyntax node, SyntaxNodeAnalysisContext context)
+        {
+            if (node.AttributeLists.Count == 0)
+            {
+                return false;
+            }
+
+            var candidateAttributes = node.AttributeLists.SelectMany(x => x.Attributes).Where(x =>
+            {
+                SimpleNameSyntax sns = (x.Name as SimpleNameSyntax) ?? (x.Name as QualifiedNameSyntax).Right;
+                var className = sns?.Identifier.Text;
+                return className == "ObjectMapperMethod" || className == "ObjectMapperMethodAttribute";
+            }).ToList();
+            if (candidateAttributes.Count == 0)
+            {
+                return false;
+            }
+
+            var methodSymbol = context.SemanticModel.GetDeclaredSymbol(node);
+            if (!methodSymbol.ReturnsVoid || methodSymbol.Parameters.Length != 2)
+            {
+                return false;
+            }
+
+            if (!candidateAttributes.Any(x =>
+            {
+                var symbol = context.SemanticModel.GetSymbolInfo(x).Symbol?.ContainingType;
+                if (symbol == null)
+                {
+                    return false;
+                }
+
+                var fullSymbolName = symbol.ToDisplayString();
+                if (fullSymbolName != "ObjectMapper.Framework.ObjectMapperMethodAttribute")
+                {
+                    return false;
+                }
+
+                if (!IsCorrectAssembly(symbol.ContainingAssembly))
+                {
+                    return false;
+                }
+
+                return true;
+            }))
+            {
+                return false;
+            }
+
+            var diagnostic = Diagnostic.Create(Rule, node.Identifier.GetLocation());
+            context.ReportDiagnostic(diagnostic);
+            return true;
+        }
+
+        private static readonly ImmutableArray<byte> _publicKeyToken = ImmutableArray.Create<byte>( 38, 23, 68, 249, 236, 31, 118, 87 );
+        private static bool IsCorrectAssembly(IAssemblySymbol assemblySymbol)
+        {
+            if (assemblySymbol.Name != "ObjectMapper.Framework")
+            {
+                return false;
+            }
+            if (!assemblySymbol.Identity.IsStrongName || !_publicKeyToken.SequenceEqual(assemblySymbol.Identity.PublicKeyToken))
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
