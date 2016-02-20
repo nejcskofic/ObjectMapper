@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using ObjectMapper.GenerateImplementationAnalyzer.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -66,6 +67,11 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
 
             var fullSymbolName = symbol.ToDisplayString();
             if (fullSymbolName != "ObjectMapper.Framework.ObjectMapperMethodAttribute")
+            {
+                return;
+            }
+
+            if (!FrameworkHelpers.IsObjectMapperFrameworkAssembly(symbol.ContainingAssembly))
             {
                 return;
             }

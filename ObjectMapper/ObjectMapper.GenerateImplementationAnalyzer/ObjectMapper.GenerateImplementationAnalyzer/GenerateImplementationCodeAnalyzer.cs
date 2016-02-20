@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using ObjectMapper.GenerateImplementationAnalyzer.Utilities;
 
 namespace ObjectMapper.GenerateImplementationAnalyzer
 {
@@ -91,7 +92,7 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
                 return;
             }
 
-            if (!IsCorrectAssembly(symbol.OriginalDefinition.ContainingAssembly))
+            if (!FrameworkHelpers.IsObjectMapperFrameworkAssembly(symbol.OriginalDefinition.ContainingAssembly))
             {
                 return;
             }
@@ -125,15 +126,15 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
             if (symbol.Parameters.Length == 1)
             {
                 mapperInterface = symbol.ContainingType.AllInterfaces.FirstOrDefault(x => 
-                    x.OriginalDefinition.ToDisplayString() == "ObjectMapper.Framework.IObjectMapper<T>" && 
-                    IsCorrectAssembly(x.OriginalDefinition.ContainingAssembly) &&
+                    x.OriginalDefinition.ToDisplayString() == "ObjectMapper.Framework.IObjectMapper<T>" &&
+                    FrameworkHelpers.IsObjectMapperFrameworkAssembly(x.OriginalDefinition.ContainingAssembly) &&
                     x.TypeArguments[0].Equals(symbol.Parameters[0].Type));
             }
             else if (symbol.Parameters.Length == 2)
             {
                 mapperInterface = symbol.ContainingType.AllInterfaces.FirstOrDefault(x => 
                     x.OriginalDefinition.ToDisplayString() == "ObjectMapper.Framework.IObjectMapperAdapter<T, U>" &&
-                    IsCorrectAssembly(x.OriginalDefinition.ContainingAssembly) && 
+                    FrameworkHelpers.IsObjectMapperFrameworkAssembly(x.OriginalDefinition.ContainingAssembly) && 
                     (x.TypeArguments[0].Equals(symbol.Parameters[0].Type) && x.TypeArguments[1].Equals(symbol.Parameters[1].Type) 
                     || x.TypeArguments[0].Equals(symbol.Parameters[1].Type) && x.TypeArguments[1].Equals(symbol.Parameters[0].Type)));
             }
@@ -162,6 +163,12 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
             return true;
         }
 
+        /// <summary>
+        /// Checks for method with object mapper attribute.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
         private static bool CheckForMethodWithObjectMapperAttribute(MethodDeclarationSyntax node, SyntaxNodeAnalysisContext context)
         {
             if (node.AttributeLists.Count == 0)
@@ -200,7 +207,7 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
                     return false;
                 }
 
-                if (!IsCorrectAssembly(symbol.ContainingAssembly))
+                if (!FrameworkHelpers.IsObjectMapperFrameworkAssembly(symbol.ContainingAssembly))
                 {
                     return false;
                 }
@@ -213,20 +220,6 @@ namespace ObjectMapper.GenerateImplementationAnalyzer
 
             var diagnostic = Diagnostic.Create(Rule, node.Identifier.GetLocation());
             context.ReportDiagnostic(diagnostic);
-            return true;
-        }
-
-        private static readonly ImmutableArray<byte> _publicKeyToken = ImmutableArray.Create<byte>( 38, 23, 68, 249, 236, 31, 118, 87 );
-        private static bool IsCorrectAssembly(IAssemblySymbol assemblySymbol)
-        {
-            if (assemblySymbol.Name != "ObjectMapper.Framework")
-            {
-                return false;
-            }
-            if (!assemblySymbol.Identity.IsStrongName || !_publicKeyToken.SequenceEqual(assemblySymbol.Identity.PublicKeyToken))
-            {
-                return false;
-            }
             return true;
         }
     }
